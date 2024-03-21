@@ -33,4 +33,4 @@ jobs:
           path: sast.txt
         if: ${{ always() }}
       - id: set-output
-        run: echo "sha256=${{ steps.upload.outputs.sha256 }}" >> GITHUB_OUTPUT
+        run: echo "sha256=${{ steps.upload.outputs.sha256 }}" >> $GITHUB_OUTPUT
