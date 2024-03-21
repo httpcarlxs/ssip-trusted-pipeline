@@ -1,0 +1,61 @@
+name: push image from temporary registry to final registry
+
+permissions: {}
+
+on:
+  workflow_call:
+    inputs:
+      temp-registry:
+        description: temporary registry url
+        required: true
+        type: string
+
+      final-registry:
+        description: final registry url
+        required: true
+        type: string
+      
+      image-name:
+        description: image name
+        required: true
+        type: string
+
+      digest:
+        description: sha256 digest of the image
+        required: true
+        type: string
+
+    secrets:
+      temp-username:
+        description: username for the temporary registry
+        required: true
+      temp-password:
+        description: password for the temporary registry
+        required: true
+      final-username:
+        description: username for the final registry
+        required: true
+      final-password:
+        description: password for the final registry
+        required: true
+
+jobs:
+  publish:
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@6c1fd22b67f7a7c42ad9a45c0f4197434035e429
+        with:
+          go-version: '1.21'
+      - uses: imjasonh/setup-crane@v0.1
+
+      - name: Login to both registries
+        run: |
+          crane auth login ${{ inputs.temp-registry }} -u ${{ secrets.temp-username }} -p ${{ secrets.temp-password }}
+          crane auth login ${{ inputs.final-registry }} -u ${{ secrets.final-username }} -p ${{ secrets.final-password }}
+
+      - name: Copy image from temporary registry to final registry
+        run: |
+          crane copy ${{ inputs.temp-registry }}/${{ inputs.image-name }}@${{ inputs.digest }} ${{ inputs.final-registry }}/${{ inputs.image-name }}:${{ github.ref_name }}
