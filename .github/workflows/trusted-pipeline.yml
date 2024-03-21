@@ -1,0 +1,98 @@
+name: DevSecOps Pipeline
+
+permissions: {}
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        type: string
+        description: The directory where the Dockerfile is located.
+        required: false
+        default: .
+
+
+      package-test-path:
+        type: string
+        description: The path to the package to test.
+        required: false
+        default: .
+
+      temp-registry:
+        description: OCI registry to store image before tests
+        type: string
+        required: true
+
+    secrets:
+      intermediary-registry-username:
+        description: Username for the intermediary registry
+        required: true
+
+      intermediary-registry-password:
+        description: Password for the intermediary registry
+        required: true
+
+jobs:
+  sast:
+    permissions:
+      contents: read
+    uses: Laerson/ssip-trusted-pipeline/.github/workflows/sast.yml@main
+
+  test:
+    permissions:
+      contents: read
+      actions: read
+    uses: Laerson/ssip-trusted-pipeline/.github/workflows/unit-test.yml@main
+    with:
+      path: ${{ inputs.package-test-path }}
+
+  build:
+    permissions:
+      contents: read
+    uses: Laerson/ssip-trusted-pipeline/.github/workflows/build.yml@main
+    with:
+      registry: ${{ inputs.temp-registry }}
+      image-name: ${{ github.repository }}
+    secrets:
+      username: ${{ secrets.intermediary-registry-username }}
+      password: ${{ secrets.intermediary-registry-password }}
+
+  sbom:
+    needs: [build]
+    uses: Laerson/ssip-trusted-pipeline/.github/workflows/sbom.yml@main
+    with:
+      registry: ${{ inputs.temp-registry }}
+      image: ${{ needs.build.outputs.image-name }}
+      digest: ${{ needs.build.outputs.digest }}
+    secrets:
+      username: ${{ secrets.intermediary-registry-username }}
+      password: ${{ secrets.intermediary-registry-password }}
+
+  vulnerability-scan:
+    needs: [build]
+    uses: Laerson/ssip-trusted-pipeline/.github/workflows/vuln.yml@main
+    with:
+      registry: ${{ inputs.temp-registry }}
+      image-name: ${{ needs.build.outputs.image-name }}
+      digest: ${{ needs.build.outputs.digest }}
+      threshold: high
+    secrets:
+      username: ${{ secrets.intermediary-registry-username }}
+      password: ${{ secrets.intermediary-registry-password }}
+
+  publish:
+    permissions:
+      contents: read
+      packages: write
+    needs: [build, vulnerability-scan, sbom]
+    uses: Laerson/ssip-trusted-pipeline/.github/workflows/release.yml@main
+    with:
+      temp-registry: ${{ inputs.temp-registry }}
+      final-registry: ghcr.io
+      image-name: ${{ needs.build.outputs.image-name }}
+      digest: ${{ needs.build.outputs.digest }}
+    secrets:
+      temp-username: ${{ secrets.intermediary-registry-username }}
+      temp-password: ${{ secrets.intermediary-registry-password }}
+      final-username: ${{ github.actor }}
+      final-password: ${{ secrets.GITHUB_TOKEN }}
