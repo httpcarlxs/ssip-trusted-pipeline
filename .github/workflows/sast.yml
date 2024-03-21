@@ -1,0 +1,36 @@
+name: SAST with Semgrep
+
+permissions: {}
+
+on:
+  workflow_call:
+    outputs:
+      sha256:
+        description: The sha256 of the file with the results of the SAST
+        value: ${{ jobs.sast.outputs.sha256 }}
+jobs:
+  sast:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    outputs:
+      sha256: ${{ TOADD }}
+    steps:
+      - uses: actions/checkout@cd7d8d697e10461458bc61a30d094dc601a8b017
+      - uses: actions/setup/python@9a7ac94420f42ee15fc60ab88d0dca4be1fd5757
+        with:
+          python-version: '3.10'
+      - shell: bash
+        run: |
+          python3 -m pip install semgrep
+          semgrep ci 2>&1 | tee sast.txt
+          env:
+            SEMGREP_RULES: "p/default"
+      - id: upload
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact@e4fc9a017a7ab70d0d59a2bce754db4706297da1
+        with:
+          name: sast.txt
+          path: sast.txt
+        if: ${{ always() }}
+      - id: set-output
+        run: echo "sha256=${{ steps.upload.outputs.sha256 }}" >> GITHUB_OUTPUT
