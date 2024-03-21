@@ -1,0 +1,102 @@
+name: Vulnerability Scan with Trivy
+
+permissions: {}
+
+on:
+  workflow_call:
+    inputs:
+      digest:
+        description: The digest of the image to scan
+        required: true
+        type: string
+
+      image-name:
+        description: The name of the image to scan
+        required: true
+        type: string
+
+      threshold:
+        description: Minimum Severity to block the pipeline
+        required: true
+        type: string
+
+      registry:
+        description: The registry of the image to scan
+        required: true
+        type: string
+
+    outputs:
+      sha256:
+        description: The sha256 of the scan results file.
+        value: ${{ jobs.vuln-scan.outputs.sha256 }}
+
+    secrets:
+      username:
+        description: registry username
+        required: true
+
+      password:
+        description: registry password
+        required: true
+
+jobs:
+  vuln-scan:
+    runs-on: ubuntu-latest
+    outputs:    
+      sha256: ${{ steps.upload.outputs.sha256 }}
+
+    steps:
+      - uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20
+      - uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20
+        with:
+          registry: ${{ inputs.registry }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
+
+      - name: Define Threshold Flag
+        id: threshold
+        run: |
+          if [ "${{ inputs.threshold }}" == "low" ]; then
+            echo "threshold=LOW,MEDIUM,HIGH,CRITICAL" >> $GITHUB_OUTPUT
+          elif [ "${{ inputs.threshold }}" == "medium" ]; then
+            echo "threshold=MEDIUM,HIGH,CRITICAL" >> $GITHUB_OUTPUT
+          elif [ "${{ inputs.threshold }}" == "high" ]; then
+            echo "threshold=HIGH,CRITICAL" >> $GITHUB_OUTPUT
+          elif [ "${{ inputs.threshold }}" == "critical" ]; then
+            echo "threshold=CRITICAL" >> $GITHUB_OUTPUT
+          else
+            echo "Invalid minimum severity level specified: ${{ inputs.threshold }}"
+            exit 1
+          fi
+
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.49.0
+
+      - name: Pull Image
+        run: docker pull "${{ inputs.registry }}/${{ inputs.image-name }}@${{ inputs.digest }}"
+
+      - name: SBOM Scan with Trivy All vulnerabilities levels
+        run: trivy image --exit-code 0 --format cosign-vuln --output vuln-scan.json "${{ inputs.registry }}/${{ inputs.image-name }}@${{ inputs.digest }}"
+
+      - name: SBOM Scan with Trivy fail pipeline on threshold findings
+        run: trivy image --exit-code 1 --severity ${{ steps.threshold.outputs.threshold }} --format cosign-vuln --output block-findings.json "${{ inputs.registry }}/${{ inputs.image-name }}@${{ inputs.digest }}"
+
+      - name: Upload Vulnerability Scan Results to workflow registry
+        id: upload
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact@e4fc9a017a7ab70d0d59a2bce754db4706297da1
+        with:
+          name: vuln-scan.json
+          path: vuln-scan.json
+        if: ${{ always() }}
+
+      - name: Upload blocking Scan Results to workflow registry
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact@e4fc9a017a7ab70d0d59a2bce754db4706297da1
+        with:
+          name: block-findings.json
+          path: block-findings.json
+        if: ${{ always() }}
+
+      - name: set output
+        id: set-output
+        run: echo "sha256=${{ steps.upload.outputs.sha256 }}" >> $GITHUB_OUTPUT
