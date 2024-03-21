@@ -24,8 +24,8 @@ jobs:
         run: |
           python3 -m pip install semgrep
           semgrep ci 2>&1 | tee sast.txt
-          env:
-            SEMGREP_RULES: "p/default"
+        env:
+          SEMGREP_RULES: p/default
       - id: upload
         uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact@e4fc9a017a7ab70d0d59a2bce754db4706297da1
         with:
