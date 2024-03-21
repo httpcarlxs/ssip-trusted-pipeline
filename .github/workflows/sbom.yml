@@ -1,0 +1,69 @@
+name: Generate SBOM with trivy
+
+permissions: {}
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: image to be scanned
+        type: string
+        required: true
+
+      registry:
+        type: string
+        description: Registry where image is stored
+        required: true
+
+      digest:
+        type: string
+        description: Digest of the image
+        required: true
+    
+    outputs:    
+      sha256:
+        description: The sha256 of the sbom file.
+        value: ${{ jobs.sbom.outputs.sha256 }}
+
+    secrets:
+      username:
+        description: registry username
+        required: true
+      password:
+        description: registry password
+        required: true
+
+jobs:
+  sbom:
+    runs-on: ubuntu-latest
+    outputs:    
+      sha256: ${{ steps.upload.outputs.sha256 }}
+    steps:
+      - uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20
+      - uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20
+        with:
+          registry: ${{ inputs.registry }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.49.0
+          
+      - name: Pull Image
+        run: docker pull "${{ inputs.registry }}/${{ inputs.image }}@${{ inputs.digest }}"
+
+      - name: Generate SBOM
+        run: |
+          docker images --digests
+          trivy image --format cyclonedx --output cyclonedx.json "${{ inputs.registry }}/${{ inputs.image }}@${{ inputs.digest }}"
+
+      - name: Secure Upload Sbom
+        id: upload
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact@e4fc9a017a7ab70d0d59a2bce754db4706297da1
+        with:
+          name: cyclonedx.json
+          path: cyclonedx.json
+
+      - name: set output
+        id: set-output
+        run: echo "sha256=${{ steps.upload.outputs.sha256 }}" >> $GITHUB_OUTPUT
