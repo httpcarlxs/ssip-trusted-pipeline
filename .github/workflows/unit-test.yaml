@@ -1,0 +1,52 @@
+name: go test
+
+permissions: {}
+
+on:
+  workflow_call:
+    inputs:
+      path:
+        description: Path to the package to test
+        type: string
+        required: false
+        default: .
+      go-version:
+        description: Go version to use
+        type: string
+        required: false
+        default: "1.21"
+    outputs:
+      sha256:
+        description: SHA256 hash of the unit test results file
+        value: ${{ jobs.test.outputs.sha256 }}
+
+jobs:
+  test:
+    permissions:
+      contents: read
+      actions: read
+    runs-on: ubuntu-latest
+    outputs:
+      sha256: ${{ steps.set-output.outputs.sha256 }}
+    steps:
+      - uses: actions/checkout@cd7d8d697e10461458bc61a30d094dc601a8b017
+      - uses: actions/setup-go@6c1fd22b67f7a7c42ad9a45c0f4197434035e429
+        with:
+          go-version: ${{ inputs.go-version }}
+      - shell: bash
+        run: |
+          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          if [ "${{ inputs.path }}" = "." ]; then
+            go test -v | tee ${{ github.workspace }}/unit-test.txt
+          else
+            cd ${{ inputs.path }}
+            go test -v | tee ${{ github.workspace }}/unit-test.txt
+          fi
+      - id: upload
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact@e4fc9a017a7ab70d0d59a2bce754db4706297da1
+        with:
+          name: unit-test.txt
+          path: ${{ github.workspace }}/unit-test.txt
+        if: ${{ always() }}
+      - id: set-output
+        run: echo "sha256=${{ steps.upload.outputs.sha256 }}" >> $GITHUB_OUTPUT
