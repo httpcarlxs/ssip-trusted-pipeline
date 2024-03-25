@@ -23,6 +23,11 @@ on:
         type: string
         required: true
 
+      deployment:
+        description: Path to the deployment manifest
+        type: string
+        required: true
+
     secrets:
       intermediary-registry-username:
         description: Username for the intermediary registry
@@ -139,3 +144,16 @@ jobs:
           cosign attest -y --predicate vuln-scan.json --type vuln "ghcr.io/${{ needs.build.outputs.image-name }}@${{ needs.build.outputs.digest }}"
           cosign attest -y --predicate sast.txt "ghcr.io/${{ needs.build.outputs.image-name }}@${{ needs.build.outputs.digest }}"
           cosign attest -y --predicate unit-test.txt "ghcr.io/${{ needs.build.outputs.image-name }}@${{ needs.build.outputs.digest }}"
+
+  deploy:
+    needs: [attestations, build]
+    permissions:
+      contents: read
+    uses: Laerson/ssip-trusted-pipeline/.github/workflows/deploy.yml@main
+    with:
+      deployment: ${{ inputs.deployment }}
+      image: "ghcr.io/${{ needs.build.outputs.image-name }}@${{ needs.build.outputs.digest }}"
+    secrets:
+      kubeconfig: ${{ secrets.kubeconfig }}
+      password: ${{ secrets.GITHUB_TOKEN }}
+      username: ${{ github.actor }}

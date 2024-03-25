@@ -1,0 +1,51 @@
+name: Deploy image to cluster
+
+permissions: {}
+
+on:
+  workflow_call:
+    inputs:
+      deployment:
+        description: path to the deployment .yml file
+        type: string
+        required: true
+
+      image:
+        description: name of the image to deploy
+        type: string
+        required: true
+
+    secrets:
+      kubeconfig:
+        description: kubeconfig file
+        required: true
+
+      password:
+        description: password for the registry
+        required: true
+
+      username:
+        description: username for the registry
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
+
+      - name: Install Kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v1.28.3 # This workflow can be improved by allowing the user to specify the version
+
+      - uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.kubeconfig }}
+
+      - name: Deploy
+        run: |
+          kubectl apply -f ${{ inputs.deployment }}
