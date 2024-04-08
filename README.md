@@ -70,8 +70,9 @@ Exemplo:
 
 ```bash
 cosign verify-attestation \
-  --certificate-identity="https://github.com/Laerson/ssip-trusted-pipeline/.github/workflows/trusted-pipeline.yml@refs/tags/v1.0.0" \
-  --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
+  --certificate-identity "https://github.com/Laerson/ssip-trusted-pipeline/.github/workflows/trusted-pipeline.yml@refs/tags/v1.0.0" \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  --certificate-github-workflow-ref "https://github.com/laerson/ssip-demo-project/.github/workflows/untrusted-pipeline.yml@refs/tags/v1.0.0" \
   ghcr.io/laerson/ssip-demo-project:v1.0.0
 ```
 
