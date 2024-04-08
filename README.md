@@ -23,7 +23,7 @@ O [workflow principal](.github/workflows/devsecops-pipeline.yml) desse repositó
    2. Atestado de Análise de Vulnerabilidades (vuln)
    3. Atestado de SAST Scan (predicado genérico)
    4. Atestado de Teste Unitário (predicado genérico)
-   5. Atestado SLSA (slsa)
+   5. Atestado SLSA (slsaprovenance)
 8. Deploy da imagem no cluster k8s usando o arquivo de manifesto fornecido e o arquivo kubeconfig armazenado como um segredo no repositório.
 
 ## 2. Como usar
@@ -69,11 +69,13 @@ O cliente pode verificar a integridade da imagem final usando a ferramenta `cosi
 Exemplo:
 
 ```bash
-cosign verify-attestation --type=slsaprovenance \
+cosign verify-attestation \
   --certificate-identity="https://github.com/Laerson/ssip-trusted-pipeline/.github/workflows/trusted-pipeline.yml@refs/tags/v1.0.0" \
   --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
   ghcr.io/laerson/ssip-demo-project:v1.0.0
 ```
+
+Para mais detalhes sobre a verificação dos atestados, consulte a [documentação do cosign](https://github.com/sigstore/cosign/blob/main/doc/cosign_verify-attestation.md).
 
 ## 4. Outro
 
