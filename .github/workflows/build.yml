@@ -41,7 +41,6 @@ on:
 env:
   IMAGE_NAME: ${{ inputs.image-name }}
   IMAGE_REGISTRY: ${{ inputs.registry }}
-  DOCKER_TLS_VERIFY: "0"
 
 jobs:
   build:
