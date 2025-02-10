@@ -41,7 +41,7 @@ on:
 
 jobs:
   vuln-scan:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     outputs:    
       sha256: ${{ steps.upload.outputs.sha256 }}
 
