@@ -32,8 +32,6 @@ on:
       password:
         description: registry password
         required: true
-env:
-  DOCKER_TLS_VERIFY: "0"
 jobs:
   sbom:
     runs-on: self-hosted
