@@ -38,8 +38,6 @@ on:
       final-password:
         description: password for the final registry
         required: true
-env:
-  DOCKER_TLS_VERIFY: "0"
 jobs:
   publish:
     permissions:
