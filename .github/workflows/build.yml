@@ -87,9 +87,4 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           builder: ${{ steps.buildx.outputs.name }}
-          build-args: |
-            DOCKER_TLS_VERIFY=0
-            DOCKER_CERT_PATH=""
-          secrets: |
-            "DOCKER_BUILDKIT=1"
-          allow: security.insecure
+          outputs: type=image,push=true
