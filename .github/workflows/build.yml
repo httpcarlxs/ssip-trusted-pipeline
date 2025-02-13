@@ -56,7 +56,11 @@ jobs:
           
       - name: Use existing Buildx builder
         run: |
-          docker buildx create --name container-builder --use --driver docker-container || echo "Builder já existe"
+          if docker buildx inspect container-builder > /dev/null 2>&1; then
+            echo "Builder já existe, usando o existente..."
+          else
+            docker buildx create --name container-builder --use --driver docker-container
+          fi
           docker buildx inspect --bootstrap
 
       - uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20
