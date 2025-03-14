@@ -110,22 +110,22 @@ jobs:
     runs-on: ubuntu-latest
     needs: [sast, test, build, sbom, vulnerability-scan, publish]
     steps:
-      - uses: slsa-framework/slsa-github-generator/.github/actions/secure-download-artifact@v2.0.0
+      - uses: slsa-framework/slsa-github-generator/.github/actions/secure-download-artifact@main
         with:
           name: sast.txt
           path: sast.txt
           sha256: ${{ needs.sast.outputs.sha256 }}
-      - uses: slsa-framework/slsa-github-generator/.github/actions/secure-download-artifact@v2.0
+      - uses: slsa-framework/slsa-github-generator/.github/actions/secure-download-artifact@main
         with:
           name: unit-test.txt
           path: unit-test.txt
           sha256: ${{ needs.test.outputs.sha256 }}
-      - uses: slsa-framework/slsa-github-generator/.github/actions/secure-download-artifact@v2
+      - uses: slsa-framework/slsa-github-generator/.github/actions/secure-download-artifact@main
         with:
           name: cyclonedx.json
           path: cyclonedx.json
           sha256: ${{ needs.sbom.outputs.sha256 }}
-      - uses: slsa-framework/slsa-github-generator/.github/actions/secure-download-artifact@v2
+      - uses: slsa-framework/slsa-github-generator/.github/actions/secure-download-artifact@main
         with:
           name: vuln-scan.json
           path: vuln-scan.json
