@@ -27,7 +27,7 @@ jobs:
         env:
           SEMGREP_RULES: p/default
       - id: upload
-        uses: slsa-framework/slsa-github-generator/secure-upload-artifact@v2
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact@main
         with:
           name: sast.txt
           path: sast.txt
