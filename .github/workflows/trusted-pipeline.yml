@@ -154,6 +154,6 @@ jobs:
       deployment: ${{ inputs.deployment }}
       image: "ghcr.io/${{ needs.build.outputs.image-name }}@${{ needs.build.outputs.digest }}"
     secrets:
-      kubeconfig: ${{ secrets.kubeconfig }}
+      kubeconfig: ${{ secrets.KUBE_CONFIG }}
       password: ${{ secrets.GITHUB_TOKEN }}
       username: ${{ github.actor }}
