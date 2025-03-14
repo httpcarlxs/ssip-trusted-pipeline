@@ -59,7 +59,7 @@ jobs:
 
       - name: Secure Upload Sbom
         id: upload
-        uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact@e4fc9a017a7ab70d0d59a2bce754db4706297da1
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact@main
         with:
           name: cyclonedx.json
           path: cyclonedx.json
