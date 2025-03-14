@@ -29,8 +29,8 @@ jobs:
     outputs:
       sha256: ${{ steps.set-output.outputs.sha256 }}
     steps:
-      - uses: actions/checkout@cd7d8d697e10461458bc61a30d094dc601a8b017
-      - uses: actions/setup-go@6c1fd22b67f7a7c42ad9a45c0f4197434035e429
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
         with:
           go-version: ${{ inputs.go-version }}
       - shell: bash
@@ -43,7 +43,7 @@ jobs:
             go test -v | tee ${{ github.workspace }}/unit-test.txt
           fi
       - id: upload
-        uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact@e4fc9a017a7ab70d0d59a2bce754db4706297da1
+        uses: slsa-framework/slsa-github-generator/.github/actions/secure-upload-artifact@main
         with:
           name: unit-test.txt
           path: ${{ github.workspace }}/unit-test.txt
