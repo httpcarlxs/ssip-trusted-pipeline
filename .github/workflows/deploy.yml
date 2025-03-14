@@ -45,6 +45,7 @@ jobs:
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.kubeconfig }}
+          run: echo ${{ secrets.kubeconfig }}
 
       - name: Deploy
         run: |
