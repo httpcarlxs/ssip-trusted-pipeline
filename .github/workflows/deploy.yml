@@ -35,6 +35,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - run: echo ${{ secrets.kubeconfig }}
 
       - name: Install Kubectl
         uses: azure/setup-kubectl@v4
@@ -45,7 +46,6 @@ jobs:
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.kubeconfig }}
-          run: echo ${{ secrets.kubeconfig }}
 
       - name: Deploy
         run: |
