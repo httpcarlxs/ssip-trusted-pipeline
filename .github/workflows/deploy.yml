@@ -38,6 +38,8 @@ jobs:
       - run: |
           echo "${{ secrets.kubeconfig }}"
           echo "${{ secrets.KUBE_CONFIG }}"
+          echo "${{ secrets.username }}"
+          echo "${{ secrets.password }}"
 
       - name: Install Kubectl
         uses: azure/setup-kubectl@v4
