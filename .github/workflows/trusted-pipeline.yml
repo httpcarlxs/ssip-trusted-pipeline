@@ -37,6 +37,10 @@ on:
         description: Password for the intermediary registry
         required: true
 
+      kubeconfig:
+        description: Content of the kubeconfig file
+        required: true
+
 jobs:
   sast:
     permissions:
@@ -154,6 +158,6 @@ jobs:
       deployment: ${{ inputs.deployment }}
       image: "ghcr.io/${{ needs.build.outputs.image-name }}@${{ needs.build.outputs.digest }}"
     secrets:
-      kubeconfig: ${{ secrets.KUBECONFIG }}
+      kubeconfig: ${{ secrets.kubeconfig }}
       password: ${{ secrets.GITHUB_TOKEN }}
       username: ${{ github.actor }}
