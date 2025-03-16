@@ -40,15 +40,12 @@ jobs:
         uses: azure/setup-kubectl@v4
         with:
           version: v1.28.3 # This workflow can be improved by allowing the user to specify the version
-      - name: Create kubeconfig
-        run: |
-          mkdir ${HOME}/.kube
-          echo ${{ secrets.kubeconfig }} | base64 --decode > ${HOME}/.kube/config
-          cat ${HOME}/.kube/config
-          echo "${{ secrets.kubeconfig }}"
-          echo "${{ secrets.KUBECONFIG }}"
-          echo "${{ secrets.username }}"
-          echo "${{ secrets.password }}"
+
+      - name: Set Up Kubernetes Context
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.kubeconfig }}
 
       - name: Deploy
         run: |
