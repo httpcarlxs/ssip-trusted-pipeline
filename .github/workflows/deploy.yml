@@ -35,14 +35,17 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - run: echo ${{ secrets.kubeconfig }}
+      - run: |
+          echo "${{ secrets.kubeconfig }}"
+          echo "${{ secrets.KUBE_CONFIG }}"
 
       - name: Install Kubectl
         uses: azure/setup-kubectl@v4
         with:
           version: v1.28.3 # This workflow can be improved by allowing the user to specify the version
 
-      - uses: azure/k8s-set-context@v4
+      - name: Set Up Kubernetes Context
+        uses: azure/k8s-set-context@v4
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.kubeconfig }}
