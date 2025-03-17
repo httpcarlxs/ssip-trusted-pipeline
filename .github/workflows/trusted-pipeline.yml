@@ -116,16 +116,6 @@ jobs:
     steps:
       - uses: slsa-framework/slsa-github-generator/.github/actions/secure-download-artifact@main
         with:
-          name: sast.txt
-          path: sast.txt
-          sha256: ${{ needs.sast.outputs.sha256 }}
-      - uses: slsa-framework/slsa-github-generator/.github/actions/secure-download-artifact@main
-        with:
-          name: unit-test.txt
-          path: unit-test.txt
-          sha256: ${{ needs.test.outputs.sha256 }}
-      - uses: slsa-framework/slsa-github-generator/.github/actions/secure-download-artifact@main
-        with:
           name: cyclonedx.json
           path: cyclonedx.json
           sha256: ${{ needs.sbom.outputs.sha256 }}
@@ -146,9 +136,7 @@ jobs:
           cosign attest -y --predicate slsa.json --type slsaprovenance "ghcr.io/${{ needs.build.outputs.image-name }}@${{ needs.build.outputs.digest }}"
           cosign attest -y --predicate cyclonedx.json --type cyclonedx "ghcr.io/${{ needs.build.outputs.image-name }}@${{ needs.build.outputs.digest }}"
           cosign attest -y --predicate vuln-scan.json --type vuln "ghcr.io/${{ needs.build.outputs.image-name }}@${{ needs.build.outputs.digest }}"
-          cosign attest -y --predicate sast.txt "ghcr.io/${{ needs.build.outputs.image-name }}@${{ needs.build.outputs.digest }}"
-          cosign attest -y --predicate unit-test.txt "ghcr.io/${{ needs.build.outputs.image-name }}@${{ needs.build.outputs.digest }}"
-
+          
   deploy:
     needs: [attestations, build]
     permissions:
