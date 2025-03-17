@@ -14,7 +14,7 @@ on:
         description: Go version to use
         type: string
         required: false
-        default: "1.21"
+        default: "1.23.6"
     outputs:
       sha256:
         description: SHA256 hash of the unit test results file
