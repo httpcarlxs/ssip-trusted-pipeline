@@ -42,6 +42,19 @@ on:
         required: true
 
 jobs:
+  sast:
+    permissions:
+      contents: read
+    uses: httpcarlxs/ssip-trusted-pipeline/.github/workflows/sast.yml@main
+
+  test:
+    permissions:
+      contents: read
+      actions: read
+    uses: httpcarlxs/ssip-trusted-pipeline/.github/workflows/unit-test.yml@main
+    with:
+      path: ${{ inputs.package-test-path }}
+
   build:
     permissions:
       contents: read
