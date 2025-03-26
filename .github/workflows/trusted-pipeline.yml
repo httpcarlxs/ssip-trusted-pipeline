@@ -132,7 +132,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: sigstore/cosign-installer@v3.1.2
       - run: |
-          docker buildx imagetools inspect "ghcr.io/${{ needs.build.outputs.image-name }}@${{ needs.build.outputs.digest }}" --format "{{json .Provenance}}" > slsa.json
+          docker buildx imagetools inspect "ghcr.io/${{ needs.build.outputs.image-name }}@${{ needs.build.outputs.digest }}" --format "{{json .Provenance.SLSA}}" > slsa.json
           cat slsa.json
           cosign attest -y --predicate slsa.json --type slsaprovenance "ghcr.io/${{ needs.build.outputs.image-name }}@${{ needs.build.outputs.digest }}"
           cosign attest -y --predicate cyclonedx.json --type cyclonedx "ghcr.io/${{ needs.build.outputs.image-name }}@${{ needs.build.outputs.digest }}"
