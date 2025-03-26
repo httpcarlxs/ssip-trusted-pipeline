@@ -60,7 +60,7 @@ jobs:
           username: ${{ secrets.username }}
           password: ${{ secrets.password }}
       - id: meta
-        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81
+        uses: docker/metadata-action@v5
         with:
           images: ${{ inputs.registry }}/${{ inputs.image-name }}
 
@@ -86,6 +86,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           sbom: true
           push: true
-          provenance: mode=max
+          provenance: mode=min
           cache-from: type=gha
           cache-to: type=gha,mode=max
